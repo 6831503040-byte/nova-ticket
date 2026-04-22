@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppStep, Event, User, PerformanceRound, Booking, Notification } from './types';
 import { Language, translations } from './src/translations';
 import Header from './components/Header';
@@ -13,7 +13,6 @@ import Confirmation from './components/Confirmation';
 import MyBookings from './components/MyBookings';
 import BrowseAll from './components/BrowseAll';
 import LatestNews from './components/LatestNews';
-import { io } from 'socket.io-client';
 import { ZONE_CONFIG } from './src/constants';
 
 const App: React.FC = () => {
@@ -30,33 +29,27 @@ const App: React.FC = () => {
   const [validatedTotal, setValidatedTotal] = useState<number | null>(null);
   const [validationToken, setValidationToken] = useState<string | null>(null);
   const [lang, setLang] = useState<Language>('en');
-  const socketRef = useRef<any>(null);
 
   const t = (key: keyof typeof translations['en']) => translations[lang][key] || key;
 
-  useEffect(() => {
-    socketRef.current = io();
-    
-    socketRef.current.on('notification', (data: Notification) => {
-      // Only show notification if user is logged in
-      if (data) {
-        console.log('Received notification:', data);
-        setNotification(data);
-        setNotificationHistory(prev => [data, ...prev]);
-        // Auto-hide after 10 seconds
-        setTimeout(() => setNotification(null), 10000);
-      }
-    });
-
-    return () => {
-      socketRef.current.disconnect();
-    };
-  }, []); 
-
+  // Local delayed notification (Vercel friendly)
   const handleTriggerNotification = (eventId: string, eventTitle: string) => {
-    if (socketRef.current) {
-      socketRef.current.emit('trigger-notification', { eventId, eventTitle });
-    }
+    console.log(`Local reminder set for ${eventTitle} (Triggering in 10s)`);
+    
+    setTimeout(() => {
+      const newNotif: Notification = {
+        id: `triggered-${eventId}-${Date.now()}`,
+        type: 'SALE_OPEN',
+        title: 'Reminder!',
+        message: `Your requested reminder for ${eventTitle} is here!`,
+        eventId: eventId,
+        timestamp: Date.now()
+      };
+      setNotification(newNotif);
+      setNotificationHistory(prev => [newNotif, ...prev]);
+      // Auto-hide after 10 seconds
+      setTimeout(() => setNotification(null), 10000);
+    }, 10000);
   };
 
   const handleNavigate = (step: AppStep) => {
@@ -76,7 +69,7 @@ const App: React.FC = () => {
     }
     
     const newHistory = [...stepHistory];
-    newHistory.pop(); // Remove current
+    newHistory.pop();
     const prevStep = newHistory[newHistory.length - 1];
     
     setStepHistory(newHistory);
@@ -85,7 +78,7 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     setUser(null);
-    setBookings([]); // Clear bookings on logout
+    setBookings([]);
     if (['QUEUE', 'SEATING', 'PAYMENT', 'MY_BOOKINGS'].includes(currentStep)) {
       setCurrentStep('LOGIN');
     }
@@ -118,7 +111,6 @@ const App: React.FC = () => {
   const handleLoginSuccess = async (userData: User) => {
     setUser(userData);
     
-    // Fetch persistent bookings from server
     try {
       const response = await fetch(`/api/bookings/${userData.email}`);
       const data = await response.json();
@@ -144,7 +136,6 @@ const App: React.FC = () => {
     setSelectedSeats(seats);
     
     try {
-      // Secure Price Validation (Backend as Single Source of Truth)
       const response = await fetch('/api/checkout/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -179,14 +170,13 @@ const App: React.FC = () => {
     const newBooking: Booking = {
       orderId: `NV-${dateStr}-${sequence}`,
       event: selectedEvent!,
-      roundId: selectedRound!.id, // Store roundId for persistent seat blocking
+      roundId: selectedRound!.id,
       seats: selectedSeats,
       zone: bookingZone,
       totalPrice: validatedTotal || 0,
       bookingDate: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
     };
 
-    // Save booking to server for persistence
     try {
       await fetch('/api/bookings', {
         method: 'POST',
@@ -203,7 +193,7 @@ const App: React.FC = () => {
 
   const handleReturnHome = () => {
     setCurrentStep('HOME');
-    setStepHistory(['HOME']); // Reset history when returning home
+    setStepHistory(['HOME']);
     setSelectedEvent(null);
     setSelectedRound(null);
     setSelectedSeats([]);
@@ -323,7 +313,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Real-time Notification System UI */}
+      {/* Notification UI */}
       {notification && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-4 animate-slideDown">
           <div className={`p-6 rounded-3xl border shadow-2xl backdrop-blur-xl flex items-start gap-4 ${
@@ -349,10 +339,6 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-
-      <button className="fixed bottom-6 right-6 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg hover:bg-purple-500 transition-colors z-50">
-        <i className="fas fa-question text-white"></i>
-      </button>
     </div>
   );
 };
