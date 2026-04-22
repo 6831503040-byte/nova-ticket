@@ -149,6 +149,11 @@ const SeatingPlan: React.FC<SeatingPlanProps> = ({ event, selectedRound, booking
     <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-black">
       {/* Dynamic Status Legend */}
       <div className="bg-neutral-900 border-b border-white/10 px-6 py-4 flex flex-col gap-4">
+        {/* Vercel Socket.io Disclaimer */}
+        <div className="max-w-2xl mx-auto w-full px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-3 text-[10px] md:text-xs text-amber-500/80 font-medium">
+          <i className="fas fa-triangle-exclamation"></i>
+          <span>Live seat sync is limited on some hosting platforms. Refresh if needed.</span>
+        </div>
         <div className="flex flex-wrap justify-center gap-6 md:gap-12">
            <div className="flex items-center gap-2">
              <div className="w-4 h-4 rounded bg-neutral-800 border border-white/5 flex items-center justify-center">
