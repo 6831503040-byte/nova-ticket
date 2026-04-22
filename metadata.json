@@ -1,0 +1,7 @@
+{
+  "name": "Remix: NovaTicket - Premium Booking Experience",
+  "description": "ช่วยแก้ราคาในหน้าสุดท้ายตอนได้ตั๋วแล้วได้มั้ย ราคาไม่ตรงกับที่นั่งที่เลือกไว้ และ Zone ก็ไม่ตรงกับที่เลือกไว้ในหน้าเลือกที่นั่งด้วย",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
