@@ -13,6 +13,7 @@ import Confirmation from './components/Confirmation';
 import MyBookings from './components/MyBookings';
 import BrowseAll from './components/BrowseAll';
 import LatestNews from './components/LatestNews';
+import Profile from './components/Profile';
 import { ZONE_CONFIG } from './src/constants';
 
 const App: React.FC = () => {
@@ -79,7 +80,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setUser(null);
     setBookings([]);
-    if (['QUEUE', 'SEATING', 'PAYMENT', 'MY_BOOKINGS'].includes(currentStep)) {
+    if (['QUEUE', 'SEATING', 'PAYMENT', 'MY_BOOKINGS', 'PROFILE'].includes(currentStep)) {
       setCurrentStep('LOGIN');
     }
   };
@@ -127,7 +128,16 @@ const App: React.FC = () => {
   };
 
   const handleQueueFinished = React.useCallback(() => {
-    handleNavigate('SEATING');
+    // When queue is finished, we want to skip QUEUE in the history 
+    // so going back from SEATING goes to EVENT_DETAIL or HOME
+    setStepHistory(prev => {
+      const newHist = [...prev];
+      if (newHist[newHist.length - 1] === 'QUEUE') {
+        newHist.pop(); // Remove QUEUE from history before adding SEATING
+      }
+      return [...newHist, 'SEATING'];
+    });
+    setCurrentStep('SEATING');
   }, []);
 
   const handleSeatsConfirmed = async (seats: string[]) => {
@@ -213,6 +223,17 @@ const App: React.FC = () => {
     setSelectedSeats([]);
   };
 
+  const handleGoToProfile = () => {
+    handleNavigate('PROFILE');
+    setSelectedEvent(null);
+    setSelectedRound(null);
+    setSelectedSeats([]);
+  };
+
+  const handleUpdateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+  };
+
   const handleTriggerLogin = () => {
     handleNavigate('LOGIN');
   };
@@ -237,6 +258,7 @@ const App: React.FC = () => {
         onHomeClick={() => handleNavigate('HOME')}
         onBrowseAll={() => handleNavigate('BROWSE_ALL')}
         onLatestNews={() => handleNavigate('LATEST_NEWS')}
+        onProfileClick={handleGoToProfile}
         notifications={notificationHistory}
         onMarkAllRead={handleMarkAllRead}
         onClearNotifications={handleClearHistory}
@@ -307,6 +329,14 @@ const App: React.FC = () => {
               bookings={bookings} 
               onExplore={handleGoToBrowseAll} 
               onBack={handleReturnHome}
+              t={t}
+            />
+          )}
+          {currentStep === 'PROFILE' && user && (
+            <Profile 
+              user={user}
+              onUpdateUser={handleUpdateUser}
+              onBack={goBack}
               t={t}
             />
           )}

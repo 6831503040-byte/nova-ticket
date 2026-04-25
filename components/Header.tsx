@@ -13,6 +13,7 @@ interface HeaderProps {
   onHomeClick: () => void;
   onBrowseAll: () => void;
   onLatestNews: () => void;
+  onProfileClick: () => void;
   notifications: Notification[];
   onMarkAllRead: () => void;
   onClearNotifications: () => void;
@@ -23,7 +24,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ 
   user, currentStep, onBack, onLogout, onLoginClick, onMyBookings, onHomeClick, onBrowseAll, onLatestNews,
-  notifications, onMarkAllRead, onClearNotifications, lang, onLangChange, t
+  onProfileClick, notifications, onMarkAllRead, onClearNotifications, lang, onLangChange, t
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -159,13 +160,22 @@ const Header: React.FC<HeaderProps> = ({
             </button>
             
             <div className="flex items-center gap-3 border-l border-white/10 pl-4 md:pl-6">
-              <div className="hidden md:block text-right">
-                <p className="text-[10px] text-neutral-500 leading-none">Logged in as</p>
-                <p className="text-sm font-semibold">{user.name}</p>
-              </div>
-              <div className="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center border-2 border-purple-400/30">
-                <i className="fas fa-user text-white text-xs"></i>
-              </div>
+              <button 
+                onClick={onProfileClick}
+                className="flex items-center gap-3 text-left group"
+              >
+                <div className="hidden md:block">
+                  <p className="text-[10px] text-neutral-500 leading-none">Logged in as</p>
+                  <p className="text-sm font-semibold group-hover:text-rose-500 transition-colors">{user.name}</p>
+                </div>
+                <div className={`w-9 h-9 rounded-full overflow-hidden flex items-center justify-center border-2 border-purple-400/30 group-hover:border-rose-500/50 transition-all ${!user.avatar ? 'bg-purple-600' : ''}`}>
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <i className="fas fa-user text-white text-xs"></i>
+                  )}
+                </div>
+              </button>
               <button onClick={onLogout} className="text-neutral-400 hover:text-white transition-colors p-2" title={t('logout')}>
                 <i className="fas fa-sign-out-alt"></i>
               </button>

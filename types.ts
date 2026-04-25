@@ -1,5 +1,5 @@
 
-export type AppStep = 'HOME' | 'EVENT_DETAIL' | 'LOGIN' | 'QUEUE' | 'SEATING' | 'PAYMENT' | 'CONFIRMATION' | 'MY_BOOKINGS' | 'BROWSE_ALL' | 'LATEST_NEWS';
+export type AppStep = 'HOME' | 'EVENT_DETAIL' | 'LOGIN' | 'QUEUE' | 'SEATING' | 'PAYMENT' | 'CONFIRMATION' | 'MY_BOOKINGS' | 'BROWSE_ALL' | 'LATEST_NEWS' | 'PROFILE';
 
 export interface PerformanceRound {
   id: string;
@@ -40,6 +40,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  avatar?: string;
 }
 
 export interface Booking {
